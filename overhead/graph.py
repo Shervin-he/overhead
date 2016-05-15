@@ -141,21 +141,23 @@ class GraphBuilder(object):
     def draw_degree_plot(self):
         if self.graph is None:
             self._create_graph()
-        degree_sequence = sorted(nx.degree(self.graph).items(), key=operator.itemgetter(1), reverse=True)  # degree sequence
+        degree_sequence = nx.degree(self.graph).items()
+        degree_dict = {}
+        for n in degree_sequence:
+            degree_dict[n[0]] = degree_dict.get(n[0], 0) + 1
+
+        sorted_list = [(k, degree_dict[k]) for k in sorted(degree_dict, key=degree_dict.get, reverse=True)]
+
         xs = []
         ys = []
-        for n in degree_sequence:
-            xs.append(n[0])
+        for i, n in enumerate(sorted_list):
+            xs.append(i)
             ys.append(n[1])
 
-        xticks = [str(x) for x in xs]
-        xs = [i for i in range(0, len(xticks))]
-        plt.xticks(xs, xticks)
-        pylab.ylim(ymin=0, ymax=ys[0])
+        pylab.ylim(ymin=0, ymax=ys[0]+1)
         plt.plot(xs, ys)
         plt.title("Degree rank plot")
         plt.ylabel("degree")
         plt.xlabel("rank")
-
         plt.savefig("degree_histogram.png")
         plt.show()
