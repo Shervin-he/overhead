@@ -128,6 +128,16 @@ class GraphBuilder(object):
 
         return nx.average_clustering(self.graph)
 
+    def get_edge_overlap(self, node1=None, node2=None):
+        if self.graph is None:
+            self._create_graph()
+        node1 = self.graph.nodes()[0]
+        node2 = self.graph.nodes()[1]
+        neighbors1 = self.graph.degree(node1)
+        neighbors2 = self.graph.degree(node2)
+        common_neighbors = len(set(nx.common_neighbors(self.graph, node1, node2)))
+        return common_neighbors / ((neighbors1 - 1) + (neighbors2 - 1) - common_neighbors)
+
     def draw_degree_plot(self):
         if self.graph is None:
             self._create_graph()

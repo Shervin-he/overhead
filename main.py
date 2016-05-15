@@ -6,7 +6,7 @@ import json
 
 COMMAND_CHOICES = (
     'show-graph', 'verticalfactors', 'centrality', 'pagerank', 'clustering-coefficient', 'spectrum',
-    'eccentricity-factors', 'basic-info', 'connected-components', 'degree-distribution')
+    'eccentricity-factors', 'basic-info', 'connected-components', 'degree-distribution', 'edge-overlap')
 
 
 def main():
@@ -64,6 +64,10 @@ def main():
     if args.command == 'degree-distribution':
         g_builder = graph.GraphBuilder(args.silk_file, args.ip)
         g_builder.draw_degree_plot()
+
+    if args.command == 'edge-overlap':
+        g_builder = graph.GraphBuilder(args.silk_file, args.ip)
+        print g_builder.get_edge_overlap()
 
 
 if __name__ == '__main__':
