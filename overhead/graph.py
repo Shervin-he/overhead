@@ -5,6 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.linalg.spectrum import adjacency_spectrum
 import numpy as np
+import community
 
 
 class GraphBuilder(object):
@@ -144,9 +145,8 @@ class GraphBuilder(object):
         degree_sequence = nx.degree(self.graph).items()
         degree_dict = {}
         for n in degree_sequence:
-            degree_dict[n[0]] = degree_dict.get(n[0], 0) + 1
-
-        sorted_list = [(k, degree_dict[k]) for k in sorted(degree_dict, key=degree_dict.get, reverse=True)]
+            degree_dict[n[1]] = degree_dict.get(n[1], 0) + 1
+        sorted_list = [(k, degree_dict[k]) for k in sorted(degree_dict)]
 
         xs = []
         ys = []
@@ -160,4 +160,24 @@ class GraphBuilder(object):
         plt.ylabel("degree")
         plt.xlabel("rank")
         plt.savefig("degree_histogram.png")
+        plt.show()
+
+    def community_detection(self):
+        if self.graph is None:
+            self._create_graph()
+
+        partition = community.best_partition(self.graph)
+
+        #drawing
+        size = float(len(set(partition.values())))
+        pos = nx.spring_layout(self.graph)
+        count = 0.
+        for com in set(partition.values()):
+            count = count + 1
+            list_nodes = [nodes for nodes in partition.keys()
+                          if partition[nodes] == com]
+            nx.draw_networkx_nodes(self.graph, pos, list_nodes, node_size=20,
+                                   node_color=str(count / size), with_lables=True)
+
+        nx.draw_networkx_edges(self.graph, pos, alpha=0.5)
         plt.show()
