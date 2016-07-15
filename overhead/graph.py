@@ -12,18 +12,26 @@ class GraphBuilder(object):
     graph = None
     eccentricity = None
 
-    def __init__(self, file_name, sip):
+    def __init__(self, file_name, sip, graph_type='src', weight=None):
         self.sip = silk.IPAddr(sip)
-
+        self.graph_type = graph_type
+        self.weight = weight
         self.silk_file = silk.silkfile_open(file_name, silk.READ)
 
     def _create_graph(self):
         self.graph = nx.Graph()
-        for rec in self.silk_file:
-            if rec.sip == self.sip:
-                self.graph.add_node(rec.dip.padded(), bipartite=0)
-                self.graph.add_node(rec.dport, bipartite=1)
-                self.graph.add_edge(rec.dip.padded(), rec.dport)
+        if self.graph_type == 'src':
+            for rec in self.silk_file:
+                if rec.sip == self.sip:
+                    self.graph.add_node(rec.dip.padded(), bipartite=0)
+                    self.graph.add_node(rec.dport, bipartite=1)
+                    self.graph.add_edge(rec.dip.padded(), rec.dport)
+        elif self.graph_type == 'IPs':
+            for rec in self.silk_file:
+                self.graph.add_edge(rec.sip.padded(), rec.dip.padded())
+        elif self.graph_type == 'IP_Port':
+            for rec in self.silk_file:
+                self.graph.add_edge((rec.sip, rec.sport), (rec.dip, rec.dport))
 
     def show_graph(self):
         if self.graph is None:

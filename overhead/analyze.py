@@ -12,13 +12,12 @@ from matplotlib import pylab
 
 
 class Analyzer(object):
-    def __init__(self, file_name, ip, timedelta):
+    def __init__(self, file_name, ip):
         self.ip = silk.IPAddr(ip)
         self.silk_file = silk.silkfile_open(file_name, silk.READ)
         self.time_dict = {}
         self.size_list = None
         self.time_list = None
-        self.timedelta = timedelta
 
     def _fill_time_dict(self, time_delta):
         self.time_dict = self._create_time_dict(time_delta, self.ip)
@@ -134,9 +133,9 @@ class Analyzer(object):
         }
         return result
 
-    def calculate_flow_sizes(self, dest_ip=None):
+    def calculate_flow_sizes(self, time_delta=timedelta(seconds=30), dest_ip=None):
         size_list = []
-        time_dict = self.time_dict if dest_ip is None else self._create_time_dict(self.timedelta, self.ip, dest_ip)
+        time_dict = self.time_dict if dest_ip is None else self._create_time_dict(time_delta, self.ip, dest_ip)
         time_list = [k for k in sorted(time_dict.keys(), reverse=False)]
         for index in time_list:
             size = 0
@@ -158,7 +157,6 @@ class Analyzer(object):
         self._autocorrelation(self.size_list)
 
     def _autocorrelation(self, data, shift=5):
-
         n = len(data)
         variance = np.var(self.size_list)
         x = np.array([size - np.mean(data) for size in data])
@@ -234,10 +232,10 @@ class Analyzer(object):
             time_dict[index] = port_dist
         sorted_keys = sorted(time_dict.keys())
         result = {}
-        prev_data = None
+        # prev_data = None
         for key in sorted_keys:
             _data = time_dict[key]
-            sorted_data = sorted(_data.items(), key=operator.itemgetter(0))
+            # sorted_data = sorted(_data.items(), key=operator.itemgetter(0))
             result[key] = entropy(sorted([v for k, v in _data.items()]))
             # if prev_data is not None:
             #
