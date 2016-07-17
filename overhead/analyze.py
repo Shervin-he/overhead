@@ -18,14 +18,19 @@ class Analyzer(object):
         self.time_dict = {}
         self.size_list = None
         self.time_list = None
+        self.time_delta = None
+        self.min_time = None
 
-    def _fill_time_dict(self, time_delta):
+    def _fill_time_dict(self, time_delta=timedelta(seconds=30)):
         self.time_dict = self._create_time_dict(time_delta, self.ip)
+        self.time_delta = time_delta
 
     def time_dict_statistical_features(self):
         time_series = []
+        if self.time_dict == {}:
+            self._fill_time_dict()
         if self.size_list is None or self.time_list is None:
-            raise Exception()
+            self.calculate_flow_sizes()
         for key in self.time_list:
             data = self.time_dict[key]
             mean = np.mean([d.bytes for d in data])
@@ -33,9 +38,18 @@ class Analyzer(object):
             median = np.median([d.bytes for d in data])
             time_series.append((mean, median, std))
 
-        plt.plot(self.time_list, [k[0] for k in time_series])
-        plt.plot(self.time_list, [k[1] for k in time_series])
-        plt.plot(self.time_list, [k[2] for k in time_series])
+        x = []
+        min_time = self.min_time
+        for i in self.time_list:
+            min_time = min_time + self.time_delta
+            x.append(min_time)
+
+        plt.plot(x, [k[0] for k in time_series], label="mean")
+        plt.plot(x, [k[1] for k in time_series], label="median")
+        plt.plot(x, [k[2] for k in time_series], label="std")
+        plt.xlabel("time")
+        plt.legend(loc="upper left", shadow=True, fancybox=True)
+
         plt.show()
 
     def _create_time_dict(self, time_delta, src_ip, dest_ip=None):
@@ -43,6 +57,8 @@ class Analyzer(object):
         initial_time = None
         self.silk_file = silk.silkfile_open(self.silk_file.name, silk.READ)
         for rec in self.silk_file:
+            if self.min_time is None or rec.stime < self.min_time:
+                self.min_time = rec.stime
             if initial_time is None:
                 initial_time = rec.stime
             if rec.sip == src_ip:
@@ -135,6 +151,8 @@ class Analyzer(object):
 
     def calculate_flow_sizes(self, time_delta=timedelta(seconds=30), dest_ip=None):
         size_list = []
+        if self.time_dict == {}:
+            self._fill_time_dict()
         time_dict = self.time_dict if dest_ip is None else self._create_time_dict(time_delta, self.ip, dest_ip)
         time_list = [k for k in sorted(time_dict.keys(), reverse=False)]
         for index in time_list:
@@ -165,7 +183,9 @@ class Analyzer(object):
         plt.plot(self.time_list, result)
         plt.show()
 
-    def average_flow_sizes(self):
+    def average_flow_sizes(self, time_delta=timedelta(seconds=30)):
+        if self.time_dict == {}:
+            self._fill_time_dict()
         size_list = []
         time_list = [k for k in sorted(self.time_dict.keys(), reverse=False)]
         count = 0
@@ -188,12 +208,17 @@ class Analyzer(object):
         time_list = [k for k in sorted(size_dict.keys(), reverse=False)]
         size_list = [size_dict[k] for k in time_list]
         pylab.ylim(ymin=0, ymax=size_list[-1]+1)
-        plt.plot(time_list, size_list)
+        # plt.plot(time_list, size_list)
+        ind = np.arange(len(time_list))
+        plt.bar(time_list, size_list, width=.35)
         self.time_list = time_list
         self.size_list = size_list
         plt.show()
 
-    def aggregate_flow_sizes(self):
+    def aggregate_flow_sizes(self, time_delta=timedelta(seconds=30)):
+        if self.time_dict == {}:
+            self._fill_time_dict(time_delta)
+
         size_list = []
         time_list = [k for k in sorted(self.time_dict.keys(), reverse=False)]
         size = 0
@@ -252,7 +277,7 @@ class Analyzer(object):
 
         time_list = [k for k in sorted(port_dict.keys(), reverse=False)]
         size_list = [port_dict[k] for k in time_list]
-        plt.plot(time_list, size_list)
+        plt.bar(time_list, size_list)
         self.time_list = time_list
         self.size_list = size_list
         plt.show()
@@ -350,6 +375,4 @@ class Analyzer(object):
                               'CFR': cfr,
                               'average_data_exchange': average,
                               'linear_matching': np.nan_to_num(coef)}
-        pp = pprint.PrettyPrinter(indent=4)
-        print result
-        # open('overhead_out.json', 'w').write(json.dumps(result))
+        return result
