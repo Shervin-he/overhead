@@ -36,15 +36,19 @@ class GraphBuilder(object):
     def show_graph(self):
         if self.graph is None:
             self._create_graph()
-        ips = set(n for n, d in self.graph.nodes(data=True) if d['bipartite'] == 0)
-        ports = set(n for n, d in self.graph.nodes(data=True) if d['bipartite'] == 1)
-        pos = dict()
+        if self.graph_type == 'src':
 
-        for i in ips:
-            pos[i] = [p for p in ports if self.graph.has_edge(i, p)]
-        pos.update((n, (1, i)) for i, n in enumerate(ips))
-        pos.update((n, (2, i)) for i, n in enumerate(ports))
-        nx.draw(self.graph, pos, with_labels=True)
+            ips = set(n for n, d in self.graph.nodes(data=True) if d['bipartite'] == 0)
+            ports = set(n for n, d in self.graph.nodes(data=True) if d['bipartite'] == 1)
+            pos = dict()
+            for i in ips:
+                pos[i] = [p for p in ports if self.graph.has_edge(i, p)]
+            pos.update((n, (1, i)) for i, n in enumerate(ips))
+            pos.update((n, (2, i)) for i, n in enumerate(ports))
+            nx.draw(self.graph, pos, with_labels=True)
+        else:
+            nx.draw(self.graph, with_labels=True)
+
         plt.show()
 
     def get_spectrum(self):
@@ -165,8 +169,8 @@ class GraphBuilder(object):
         pylab.ylim(ymin=0, ymax=ys[0]+1)
         plt.plot(xs, ys)
         plt.title("Degree rank plot")
-        plt.ylabel("degree")
-        plt.xlabel("rank")
+        plt.ylabel("count")
+        plt.xlabel("degree")
         plt.savefig("degree_histogram.png")
         plt.show()
 
