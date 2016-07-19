@@ -167,6 +167,7 @@ class Analyzer(object):
         if self.time_list is None or self.size_list is None:
             self.calculate_flow_sizes()
         plt.plot(self.time_list, self.size_list)
+        pylab.ylim(ymin=0, ymax=self.size_list[-1]+1)
         plt.show()
 
     def flow_size_autocorrelation(self):
@@ -278,8 +279,6 @@ class Analyzer(object):
         time_list = [k for k in sorted(port_dict.keys(), reverse=False)]
         size_list = [port_dict[k] for k in time_list]
         plt.bar(time_list, size_list)
-        self.time_list = time_list
-        self.size_list = size_list
         plt.show()
 
     def number_of_ports(self):

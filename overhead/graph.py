@@ -162,16 +162,15 @@ class GraphBuilder(object):
 
         xs = []
         ys = []
-        for i, n in enumerate(sorted_list):
-            xs.append(i)
+        for n in sorted_list:
+            xs.append(n[0])
             ys.append(n[1])
 
         pylab.ylim(ymin=0, ymax=ys[0]+1)
-        plt.plot(xs, ys)
+        plt.bar(xs, ys, tick_label=xs)
         plt.title("Degree rank plot")
         plt.ylabel("count")
         plt.xlabel("degree")
-        plt.savefig("degree_histogram.png")
         plt.show()
 
     def community_detection(self):
@@ -188,8 +187,9 @@ class GraphBuilder(object):
             count = count + 1
             list_nodes = [nodes for nodes in partition.keys()
                           if partition[nodes] == com]
-            nx.draw_networkx_nodes(self.graph, pos, list_nodes, node_size=20,
-                                   node_color=str(count / size), with_lables=True)
+            nx.draw_networkx_labels(self.graph, pos)
+            nx.draw_networkx_nodes(self.graph, pos, list_nodes,
+                                   node_color=str(count / size))
 
         nx.draw_networkx_edges(self.graph, pos, alpha=0.5)
         plt.show()
