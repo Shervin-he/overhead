@@ -105,7 +105,7 @@ class Analyzer(object):
             byte_list.append(rec.bytes)
             packet_list.append(rec.packets)
         result = {
-            'mean_bytes': np.mean(byte_list),
+            'median_bytes': np.median(byte_list),
             'average_bytes': np.average(byte_list),
             'min_bytes': np.min(byte_list),
             'max_bytes': np.max(byte_list),
@@ -166,6 +166,8 @@ class Analyzer(object):
     def draw_flow_size_graph(self):
         if self.time_list is None or self.size_list is None:
             self.calculate_flow_sizes()
+        plt.xlabel("time")
+        plt.ylabel("count")
         plt.plot(self.time_list, self.size_list)
         pylab.ylim(ymin=0, ymax=self.size_list[-1]+1)
         plt.show()
@@ -186,7 +188,7 @@ class Analyzer(object):
 
     def average_flow_sizes(self, time_delta=timedelta(seconds=30)):
         if self.time_dict == {}:
-            self._fill_time_dict()
+            self._fill_time_dict(time_delta)
         size_list = []
         time_list = [k for k in sorted(self.time_dict.keys(), reverse=False)]
         count = 0
@@ -198,6 +200,8 @@ class Analyzer(object):
                 count += 1
                 average = average / count
             size_list.append(average)
+        plt.xlabel("time")
+        plt.ylabel("count")
         plt.plot(time_list, size_list)
         plt.show()
 
@@ -214,6 +218,9 @@ class Analyzer(object):
         plt.bar(time_list, size_list, width=.35)
         self.time_list = time_list
         self.size_list = size_list
+        plt.xlabel("size")
+        plt.ylabel("count")
+
         plt.show()
 
     def aggregate_flow_sizes(self, time_delta=timedelta(seconds=30)):
@@ -228,6 +235,8 @@ class Analyzer(object):
                 size += rec.bytes
             size_list.append(size)
 
+        plt.xlabel("time")
+        plt.ylabel("count")
         plt.plot(time_list, size_list)
         plt.show()
 
@@ -278,6 +287,8 @@ class Analyzer(object):
 
         time_list = [k for k in sorted(port_dict.keys(), reverse=False)]
         size_list = [port_dict[k] for k in time_list]
+        plt.xlabel("port")
+        plt.ylabel("count")
         plt.bar(time_list, size_list)
         plt.show()
 
