@@ -136,6 +136,14 @@ class Analyzer(object):
 
         return inter_arrival_times
 
+
+    def inter_arrival_times_autocorrelation(self, dest_ip, shift='5'):
+        inter_arrival_times = [item.seconds for item in self.get_inter_arrival_times(dest_ip)]
+
+        data = self._autocorrelation(inter_arrival_times, shift)
+        plt.plot(inter_arrival_times, data)
+        plt.show()
+
     def calculate_statistical_features_inter_arrival_times(self, dest_ip):
         inter_arrival_times = [item.seconds for item in self.get_inter_arrival_times(dest_ip)]
         auto_corr = self._autocorrelation(inter_arrival_times)
@@ -169,22 +177,21 @@ class Analyzer(object):
         plt.xlabel("time")
         plt.ylabel("count")
         plt.plot(self.time_list, self.size_list)
-        pylab.ylim(ymin=0, ymax=self.size_list[-1]+1)
+        pylab.ylim(ymin=0, ymax=max(self.size_list)+1)
         plt.show()
 
-    def flow_size_autocorrelation(self):
+    def flow_size_autocorrelation(self, shift='5'):
         if self.time_list is None or self.size_list is None:
             self.calculate_flow_sizes()
-        self._autocorrelation(self.size_list)
+        data = self._autocorrelation(self.size_list, shift)
+        plt.plot(self.time_list, data)
+        plt.show()
 
     def _autocorrelation(self, data, shift=5):
         n = len(data)
-        variance = np.var(self.size_list)
-        x = np.array([size - np.mean(data) for size in data])
-        r = np.correlate(x, x, mode='full')[-n:]
-        result = r/(variance*(np.arange(n, 0, -1)))
-        plt.plot(self.time_list, result)
-        plt.show()
+        shifted_data = [0 for i in xrange(shift)] + data[shift:]
+        new_data = [data[i]*shifted_data[i] for i in range(n)]
+        return new_data
 
     def average_flow_sizes(self, time_delta=timedelta(seconds=30)):
         if self.time_dict == {}:
