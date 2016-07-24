@@ -109,25 +109,31 @@ class GraphBuilder(object):
         if self.graph is None:
             self._create_graph()
 
-        return nx.closeness_centrality(self.graph)
+        centralities = nx.closeness_centrality(self.graph)
+        return sorted(centralities.items(), key=lambda x: x[1], reverse=True)
 
     def get_eigenvector_centrality(self):
         if self.graph is None:
             self._create_graph()
 
-        return nx.eigenvector_centrality_numpy(self.graph)
+        centralities = nx.eigenvector_centrality_numpy(self.graph)
+
+        return sorted(centralities.items(), key=lambda x: x[1], reverse=True)
 
     def get_edge_betweenness_centrality(self):
         if self.graph is None:
             self._create_graph()
 
-        return nx.edge_betweenness_centrality(self.graph)
+        centralities = nx.edge_betweenness_centrality(self.graph)
+        return sorted(centralities.items(), key=lambda x: x[1], reverse=True)
 
     def get_betweenness_centrality(self):
         if self.graph is None:
             self._create_graph()
 
-        return nx.betweenness_centrality(self.graph)
+        centralities = nx.betweenness_centrality(self.graph)
+
+        return sorted(centralities.items(), key=lambda x: x[1], reverse=True)
 
     def get_page_rank(self):
         if self.graph is None:
@@ -135,11 +141,13 @@ class GraphBuilder(object):
 
         return nx.pagerank(self.graph)
 
-    def get_average_clustring_coefficient(self):
+    def get_clustring_coefficient(self):
         if self.graph is None:
             self._create_graph()
 
-        return nx.average_clustering(self.graph)
+        coefs = nx.clustering(self.graph)
+
+        return sorted(coefs.items(), key=lambda x: x[1], reverse=True)
 
     def get_edge_overlap(self, node1, node2):
         if self.graph is None:
